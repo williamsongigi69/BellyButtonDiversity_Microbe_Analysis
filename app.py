@@ -15,7 +15,7 @@ app = Flask(__name__)
 
 
 #################################################
-# Setup for Database
+# Database Setup
 #################################################
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db/bellybutton.sqlite"
@@ -64,7 +64,7 @@ def sample_metadata(sample):
 
     results = db.session.query(*sel).filter(Samples_Metadata.sample == sample).all()
 
-    # Create dictionary entry for each row of metadata
+    # Create a dictionary entry for each row of metadata information
     sample_metadata = {}
     for result in results:
         sample_metadata["sample"] = result[0]
@@ -85,9 +85,13 @@ def samples(sample):
     stmt = db.session.query(Samples).statement
     df = pd.read_sql_query(stmt, db.session.bind)
 
-    # Filter data based on the sample number
+    # Filter the data based on the sample number and
     # only keep rows with values above 1
     sample_data = df.loc[df[sample] > 1, ["otu_id", "otu_label", sample]]
+
+    # Sort by sample
+    sample_data.sort_values(by=sample, ascending=False, inplace=True)
+
     # Format the data to send as json
     data = {
         "otu_ids": sample_data.otu_id.values.tolist(),
